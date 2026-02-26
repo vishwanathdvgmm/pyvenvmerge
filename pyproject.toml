@@ -9,16 +9,16 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-license = "MIT"
+license = { text = "MIT" }
 license-files = ["LICENSE"]
-
-[project.urls]
-Homepage = "https://github.com/vishwanathdvgmm/pyvenvmerge"
-Issues = "https://github.com/vishwanathdvgmm/pyvenvmerge/issues"
 
 dependencies = [
     "packaging"
 ]
+
+[project.urls]
+Homepage = "https://github.com/vishwanathdvgmm/pyvenvmerge"
+Issues = "https://github.com/vishwanathdvgmm/pyvenvmerge/issues"
 
 [project.scripts]
 pyvenvmerge = "pyvenvmerge.cli:main"

@@ -1,4 +1,8 @@
 import argparse
+import sys
+
+from pyvenvmerge.orchestrator import merge_environments
+from pyvenvmerge.infra.exceptions import PyvenvmergeError
 
 def main():
     parser = argparse.ArgumentParser(
@@ -16,7 +20,7 @@ def main():
         "-o",
         "--output",
         required=True,
-        help="Path to output virtual environment"
+        help="Output path for merged environment"
     )
 
     parser.add_argument(
@@ -28,9 +32,13 @@ def main():
 
     args = parser.parse_args()
 
-    print("Input environments:", args.envs)
-    print("Output:", args.output)
-    print("Strategy:", args.strategy)
+    try:
+        result = merge_environments(args.envs, args.output, strategy=args.strategy)
+        print(f"\nMerge successful. New environment created at: {result}")
 
-if __name__ == "__main__":
-    main()
+    except PyvenvmergeError as e:
+        print(f"\nERROR: {e}")
+        sys.exit(1)
+
+# if __name__ == "__main__":
+#     main()
