@@ -121,7 +121,7 @@ interpreter_path: Path
 
 Uses subprocess:
 
-```python
+```bash
 python -m pip freeze
 ```
 
@@ -195,7 +195,7 @@ No merging logic here.
 
 Runs:
 
-```python
+```bash
 pip check
 ```
 
