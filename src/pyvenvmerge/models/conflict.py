@@ -8,5 +8,5 @@ class Conflict:
 
     package: str
     versions_by_env: dict[str, str]
-    selected_version: str | None
+    selected_version: str
     strategy: str

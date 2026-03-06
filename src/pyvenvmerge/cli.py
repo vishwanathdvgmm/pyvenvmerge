@@ -45,9 +45,21 @@ def main():
             print("\nDry Run Summary")
             print("----------------")
             print(f"Python version: {plan.python_version}")
+            if plan.conflicts:
+                print("\nConflicts detected:")
+                print("-----------------")
+                for conflict in plan.conflicts:
+                    print(conflict.package)
+
+                    for env_name, version in conflict.versions_by_env.items():
+                        print(f"  {env_name} → {version}")
+                    
+                    print(f"  selected → {conflict.selected_version}")
+                    print(f"  strategy → {conflict.strategy}\n")
+            
             print("\nPackages to install:")
             print("----------------")
-            
+
             for req in plan.merged_requirements.values():
                 print(f"  {req.raw_line}")
             
