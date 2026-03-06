@@ -2,10 +2,12 @@ from pathlib import Path
 from pyvenvmerge.infra.subprocess_runner import run
 from pyvenvmerge.infra.exceptions import PyvenvmergeError
 from pyvenvmerge.models.requirement import Requirement
+from pyvenvmerge.core.validator import validate_environment
 
 def build_environment(output_path: str, requirements: dict[str, Requirement]):
     """
-    Creates a new virtual environment and installs merged requirements.
+    Creates a new virtual environment and installs merged requirements,
+    and validates dependency integrity.
     """
 
     output_dir = Path(output_path)
@@ -44,5 +46,8 @@ def build_environment(output_path: str, requirements: dict[str, Requirement]):
 
     # 6️⃣ Cleanup temp file
     temp_file.unlink()
+
+    # 7️⃣ Validate environment
+    validate_environment(python_path)
 
     return python_path

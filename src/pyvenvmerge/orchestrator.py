@@ -1,14 +1,13 @@
 from pyvenvmerge.core.inspector import inspect_environment
 from pyvenvmerge.core.extractor import extract_requirements
 from pyvenvmerge.core.merger import merge_requirements
-from pyvenvmerge.core.builder import build_environment
-from pyvenvmerge.core.validator import validate_environment
+from pyvenvmerge.core.executor import build_environment
 from pyvenvmerge.infra.exceptions import PyvenvmergeError
 
 def merge_environments(env_paths: list[str], output_path: str, strategy="highest"):
     """
     Full pipeline:
-    Inspect → Extract → Merge → Build → Validate
+    Inspect → Extract → Merge → Execute
     """
 
     if len(env_paths) < 1:
@@ -34,8 +33,5 @@ def merge_environments(env_paths: list[str], output_path: str, strategy="highest
 
     # 5️⃣ Build
     new_python_path = build_environment(output_path, merged_requirements)
-
-    # 6️⃣ Validate
-    validate_environment(new_python_path)
 
     return output_path
