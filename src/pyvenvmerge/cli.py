@@ -36,11 +36,23 @@ def main():
         help="Show merge plan without creating environment"
     )
 
+    parser.add_argument(
+        "--report",
+        choices=["console", "json"],
+        default="console",
+        help="Output format for dry-run reports"
+    )
+
     args = parser.parse_args()
 
     try:
         if args.dry_run:
             plan = create_merge_plan(args.envs, args.strategy)
+
+            if args.report == "json":
+                import json
+                print(json.dumps(plan.to_dict(), indent=2))
+                return
 
             print("\nDry Run Summary")
             print("----------------")
