@@ -2,6 +2,7 @@ import argparse
 import sys
 
 from pyvenvmerge.orchestrator import merge_environments
+from pyvenvmerge.core.planner import create_merge_plan
 from pyvenvmerge.infra.exceptions import PyvenvmergeError
 
 def main():
@@ -19,7 +20,6 @@ def main():
     parser.add_argument(
         "-o",
         "--output",
-        required=True,
         help="Output path for merged environment"
     )
 
@@ -30,15 +30,41 @@ def main():
         help="Conflict resolution strategy"
     )
 
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show merge plan without creating environment"
+    )
+
     args = parser.parse_args()
 
     try:
-        result = merge_environments(args.envs, args.output, strategy=args.strategy)
+        if args.dry_run:
+            plan = create_merge_plan(args.envs, args.strategy)
+
+            print("\nDry Run Summary")
+            print("----------------")
+            print(f"Python version: {plan.python_version}")
+            print("\nPackages to install:")
+            print("----------------")
+            
+            for req in plan.merged_requirements.values():
+                print(f"  {req.raw_line}")
+            
+            print("\nNo environment created.")
+            return
+        
+        if not args.output:
+            raise PyvenvmergeError("Output path required unless using --dry-run")
+
+        result = merge_environments(
+            args.envs,
+            args.output,
+            strategy=args.strategy
+        )
+
         print(f"\nMerge successful. New environment created at: {result}")
 
     except PyvenvmergeError as e:
         print(f"\nERROR: {e}")
         sys.exit(1)
-
-# if __name__ == "__main__":
-#     main()

@@ -1,13 +1,13 @@
 from pathlib import Path
 from pyvenvmerge.infra.subprocess_runner import run
 from pyvenvmerge.infra.exceptions import PyvenvmergeError
-from pyvenvmerge.models.requirement import Requirement
 from pyvenvmerge.core.validator import validate_environment
+from pyvenvmerge.models.merge_plan import MergePlan
 
-def build_environment(output_path: str, requirements: dict[str, Requirement]):
+def execute_plan(plan: MergePlan, output_path: str):
     """
-    Creates a new virtual environment and installs merged requirements,
-    and validates dependency integrity.
+    Executes a MergePlan by creating a new environment
+    and installing merged dependencies.
     """
 
     output_dir = Path(output_path)
@@ -17,10 +17,10 @@ def build_environment(output_path: str, requirements: dict[str, Requirement]):
             f"Output path already exists: {output_path}"
         )
 
-    # 1️⃣ Create venv
+    # Create venv
     run(["python", "-m", "venv", output_path])
 
-    # 2️⃣ Detect python inside new venv (cross-platform)
+    # Detect python inside new venv
     windows_python = output_dir / "Scripts" / "python.exe"
     unix_python = output_dir / "bin" / "python"
 
@@ -31,23 +31,31 @@ def build_environment(output_path: str, requirements: dict[str, Requirement]):
     else:
         raise PyvenvmergeError("Failed to locate Python in new environment.")
 
-    # 3️⃣ Upgrade base tools
-    run([str(python_path), "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"])
+    # Upgrade base tools
+    run([
+        str(python_path),
+        "-m",
+        "pip",
+        "install",
+        "--upgrade",
+        "pip",
+        "setuptools",
+        "wheel",
+    ])
 
-    # 4️⃣ Write temporary requirements file
+    # Write requirements file
     temp_file = output_dir / "merged_requirements.txt"
 
     with open(temp_file, "w", encoding="utf-8") as f:
-        for req in requirements.values():
+        for req in plan.merged_requirements.values():
             f.write(req.raw_line + "\n")
 
-    # 5️⃣ Install dependencies
+    # Install dependencies
     run([str(python_path), "-m", "pip", "install", "-r", str(temp_file)])
 
-    # 6️⃣ Cleanup temp file
     temp_file.unlink()
 
-    # 7️⃣ Validate environment
+    # Validate environment
     validate_environment(python_path)
 
     return python_path
