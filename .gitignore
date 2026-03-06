@@ -28,3 +28,5 @@ tests/
 # api file
 *.key
 
+# pytest
+.pytest_cache/
