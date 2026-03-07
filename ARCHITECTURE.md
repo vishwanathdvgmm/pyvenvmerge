@@ -10,7 +10,7 @@ CLI[CLI Layer] --> Orchestrator[Application Orchestrator]
     Core --> ReqExtractor[Requirement Extractor]
     Core --> DepMerger[Dependency Merger]
     Core --> ConflictResolver[Conflict Resolver]
-    Core --> EnvBuilder[Environment Builder]
+    Core --> Executor[Environment Builder]
     Core --> IntegrityValidator[Integrity Validator]
 
     Core --> Infra[Infrastructure Layer]
@@ -29,24 +29,29 @@ Pyvenvmerge/
 ├── 📁 src
 │   └── 📁 pyvenvmerge
 │       ├── 📁 core
-│       │   ├── 🐍 builder.py
+│       │   ├── 🐍 __init__.py
+│       │   ├── 🐍 executor.py
 │       │   ├── 🐍 extractor.py
 │       │   ├── 🐍 inspector.py
 │       │   ├── 🐍 merger.py
+│       │   ├── 🐍 planner.py
 │       │   ├── 🐍 resolver.py
 │       │   └── 🐍 validator.py
 │       ├── 📁 infra
-│       │   ├── 🐍 filesystem.py
-│       │   ├── 🐍 logger.py
+│       │   ├── 🐍 __init__.py
+│       │   ├── 🐍 exceptions.py
 │       │   └── 🐍 subprocess_runner.py
 │       ├── 📁 models
+│       │   ├── 🐍 __init__.py
+│       │   ├── 🐍 conflict.py
 │       │   ├── 🐍 environment.py
+│       │   ├── 🐍 merge_plan.py
 │       │   ├── 🐍 merge_report.py
 │       │   └── 🐍 requirement.py
 │       ├── 🐍 __init__.py
+│       ├── 🐍 __main__.py
 │       ├── 🐍 cli.py
 │       └── 🐍 orchestrator.py
-├── 📁 tests
 ├── ⚙️ .gitignore
 ├── 📝 ARCHITECTURE.md
 ├── 📄 LICENSE
@@ -80,12 +85,12 @@ Central control flow.
 Pseudo-flow:
 
 ```
-1. Validate environments
+1. Inspect environments
 2. Extract dependencies
 3. Merge dependency sets
 4. Resolve conflicts
-5. Create new venv
-6. Install merged requirements
+5. Create MergePlan
+6. Execute plan (create environment + install packages)
 7. Run integrity check
 8. Generate report
 ```
@@ -178,7 +183,7 @@ ConflictReport
 
 ---
 
-### 5️⃣ builder.py
+### 5️⃣ executor.py
 
 Responsibilities:
 
