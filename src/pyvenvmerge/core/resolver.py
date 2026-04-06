@@ -8,15 +8,25 @@ class ResolutionStrategy:
 
 class HighestVersionStrategy(ResolutionStrategy):
     def resolve(self, existing: Requirement, incoming: Requirement) -> Requirement:
+        # Non-PyPI → cannot merge, must match
+        if existing.source_type != "pypi" or incoming.source_type != "pypi":
+            if existing.raw_line != incoming.raw_line:
+                raise PyvenvmergeError(
+                    f"Conflict for non-PyPI dependency '{existing.name}':\n"
+                    f"{existing.raw_line} vs {incoming.raw_line}"
+                )
 
+            return existing
+
+        # PyPI logic
         try:
             merged_spec = merge_specifiers(existing.specifier, incoming.specifier)
         except PyvenvmergeError:
             from pyvenvmerge.core.specifier_merge import _extract_bounds
-            
+
             l_exist, _ = _extract_bounds(existing.specifier) if existing.specifier else (None, None)
             l_inc, _ = _extract_bounds(incoming.specifier) if incoming.specifier else (None, None)
-            
+
             if l_inc and l_exist and l_inc > l_exist:
                 return incoming
             elif l_exist and l_inc and l_exist > l_inc:

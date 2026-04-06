@@ -4,23 +4,31 @@ A CLI utility that safely merges multiple Python virtual environments by reconst
 
 ---
 
-## Features (v0.3.0)
+## Features (v0.4.0)
 
 - Validates input virtual environments
 - Enforces Python version consistency
-- Extracts dependencies using "pip freeze"
+- Extracts dependencies using `pip freeze`
 - Structured dependency parsing (PEP 508 compliant)
 - Specifier-based dependency merging
 - Accurate conflict detection using constraint intersection
 - Multiple conflict resolution strategies:
-    - "highest" (default)
-    - "strict"
-    - "unpinned"
+    - `highest` (default)
+    - `strict`
+    - `unpinned`
 - Deterministic environment rebuild
-- Dependency integrity verification ("pip check")
+- Dependency integrity verification (`pip check`)
 - Dry-run mode
 - Conflict reporting
 - JSON merge plan output
+- Support for **editable installs (`-e`)**
+- Support for **Git dependencies (`git+...`)**
+- Support for **file-based dependencies (`package @ file://...`)**
+- Safe handling of non-PyPI dependencies during merge
+- Two-phase installation pipeline:
+    - PyPI dependencies installed first.
+    - Special depedencies installed separately.
+- Conflict detection for incompatible non-PyPI dependencies.
 
 ---
 
@@ -75,25 +83,23 @@ pyvenvmerge envA envB --dry-run --report json
 
 Current limitations:
 
-- Editable installs not supported.
-- Git dependencies not supported.
-- File dependencies not supported.
+- No deep resolution for Git/file dependencies.
+- Dependency markers are not fully evaluated..
+- Extra merging is basic.
 
-Support for these may be added in future versions.
+These will be improved in future versions.
 
 ---
 
 ### Version Note
 
-v0.3 introduces a major internal upgrade:
+v0.4 extends the system to handle real-world environments:
 
-- Transition from version-based merging → specifier-based merging
-- Accurate dependency constraint intersection
-- Strategy-aware conflict resolution
+- Introduces support for non-PyPI depenencies.
+- Improves installation correctness with staged installs.
+- Adds safety checks for incompatible external dependencies..
 
-This significantly improves correctness and prepares the system for real-world dependency scenarios.
-
----
+## This version makes the tool usable on practical projects.
 
 ### Architecture
 

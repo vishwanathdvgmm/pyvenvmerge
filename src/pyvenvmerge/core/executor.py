@@ -5,18 +5,11 @@ from pyvenvmerge.core.validator import validate_environment
 from pyvenvmerge.models.merge_plan import MergePlan
 
 def execute_plan(plan: MergePlan, output_path: str):
-    """
-    Executes a MergePlan by creating a new environment
-    and installing merged dependencies.
-    """
-
     output_dir = Path(output_path)
-
     if output_dir.exists():
         raise PyvenvmergeError(
             f"Output path already exists: {output_path}"
         )
-
     # Create venv
     run(["python", "-m", "venv", output_path])
 
@@ -43,17 +36,36 @@ def execute_plan(plan: MergePlan, output_path: str):
         "wheel",
     ])
 
-    # Write requirements file
-    temp_file = output_dir / "merged_requirements.txt"
+    # Split dependencies
+    normal_reqs = []
+    special_reqs = []
 
-    with open(temp_file, "w", encoding="utf-8") as f:
-        for req in plan.merged_requirements.values():
-            f.write(req.raw_line + "\n")
+    for req in plan.merged_requirements.values():
+        if req.source_type == "pypi":
+            normal_reqs.append(req.raw_line)
+        else:
+            special_reqs.append(req.raw_line)
 
-    # Install dependencies
-    run([str(python_path), "-m", "pip", "install", "-r", str(temp_file)])
+    # Install PyPI dependencies first
+    if normal_reqs:
+        temp_file = output_dir / "requirements.txt"
 
-    temp_file.unlink()
+        with open(temp_file, "w", encoding="utf-8") as f:
+            for line in normal_reqs:
+                f.write(line + "\n")
+
+        run([str(python_path), "-m", "pip", "install", "-r", str(temp_file)])
+
+        temp_file.unlink()
+
+    # Install special dependencies (editable, git, file)
+    for line in special_reqs:
+        try:
+            run([str(python_path), "-m", "pip", "install", line])
+        except Exception as e:
+            raise PyvenvmergeError(
+                f"Failed to install special dependency:\n{line}\nError: {e}"
+            )
 
     # Validate environment
     validate_environment(python_path)

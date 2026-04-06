@@ -14,9 +14,6 @@ CLI[CLI Layer] --> Orchestrator[Application Orchestrator]
     Core --> Executor[Environment Builder]
     Core --> IntegrityValidator[Integrity Validator]
 
-    Core --> Infra[Infrastructure Layer]
-
-    Infra --> SubprocessRunner[Subprocess Runner]
 ```
 
 ---
@@ -24,39 +21,41 @@ CLI[CLI Layer] --> Orchestrator[Application Orchestrator]
 # 📁 Final Project Structure
 
 ```
+
 Pyvenvmerge/
 ├── 📁 src
-│   └── 📁 pyvenvmerge
-│       ├── 📁 core
-│       │   ├── 🐍 __init__.py
-│       │   ├── 🐍 executor.py
-│       │   ├── 🐍 extractor.py
-│       │   ├── 🐍 inspector.py
-│       │   ├── 🐍 merger.py
-│       │   ├── 🐍 planner.py
-│       │   ├── 🐍 resolver.py
-│       │   ├── 🐍 specifier_merge.py
-│       │   └── 🐍 validator.py
-│       ├── 📁 infra
-│       │   ├── 🐍 __init__.py
-│       │   ├── 🐍 exceptions.py
-│       │   └── 🐍 subprocess_runner.py
-│       ├── 📁 models
-│       │   ├── 🐍 __init__.py
-│       │   ├── 🐍 conflict.py
-│       │   ├── 🐍 environment.py
-│       │   ├── 🐍 merge_plan.py
-│       │   ├── 🐍 merge_report.py
-│       │   └── 🐍 requirement.py
-│       ├── 🐍 __init__.py
-│       ├── 🐍 __main__.py
-│       ├── 🐍 cli.py
-│       └── 🐍 orchestrator.py
+│ └── 📁 pyvenvmerge
+│ ├── 📁 core
+│ │ ├── 🐍 **init**.py
+│ │ ├── 🐍 executor.py
+│ │ ├── 🐍 extractor.py
+│ │ ├── 🐍 inspector.py
+│ │ ├── 🐍 merger.py
+│ │ ├── 🐍 planner.py
+│ │ ├── 🐍 resolver.py
+│ │ ├── 🐍 specifier_merge.py
+│ │ └── 🐍 validator.py
+│ ├── 📁 infra
+│ │ ├── 🐍 **init**.py
+│ │ ├── 🐍 exceptions.py
+│ │ └── 🐍 subprocess_runner.py
+│ ├── 📁 models
+│ │ ├── 🐍 **init**.py
+│ │ ├── 🐍 conflict.py
+│ │ ├── 🐍 environment.py
+│ │ ├── 🐍 merge_plan.py
+│ │ ├── 🐍 merge_report.py
+│ │ └── 🐍 requirement.py
+│ ├── 🐍 **init**.py
+│ ├── 🐍 **main**.py
+│ ├── 🐍 cli.py
+│ └── 🐍 orchestrator.py
 ├── ⚙️ .gitignore
 ├── 📝 ARCHITECTURE.md
 ├── 📄 LICENSE
 ├── 📝 README.md
 └── ⚙️ pyproject.toml
+
 ```
 
 ---
@@ -85,6 +84,7 @@ Central control flow.
 Pseudo-flow:
 
 ```
+
 1. Inspect environments
 2. Extract dependencies
 3. Merge dependency sets
@@ -93,7 +93,8 @@ Pseudo-flow:
 6. Execute plan (create environment + install packages)
 7. Run integrity check
 8. Generate report
-```
+
+````
 
 The orchestrator coordinates modules — it does not implement logic.
 
@@ -118,13 +119,13 @@ path: Path,
 python_version: str,
 interpreter_path: Path
 )
-```
+````
 
 ---
 
 ### 2️⃣ extractor.py
 
-Uses subprocess:
+Extracts dependencies using:
 
 ```bash
 python -m pip freeze
@@ -138,9 +139,12 @@ dict[str, Requirement]
 
 Handles:
 
-- editable installs
-- git installs
-- file installs
+- PyPI dependencies
+- Editable installs (`-e`)
+- Git dependencies (`git+...`)
+- File dependencies (`package @ file://...`)
+
+Classifies each dependency by `source_type` and extracts stable identifiers for merging.
 
 ---
 
@@ -160,25 +164,16 @@ Does not resolve conflicts — just aggregates.
 
 ### 4️⃣ resolver.py
 
-Implements strategy pattern.
+Resolver now distinguishes between:
 
-Strategies:
+- PyPI dependencies → merged using specifier logic
+- Non-PyPI dependencies → pass-through or conflict
 
-- HighestVersionStrategy
-- StrictStrategy
-- UnpinnedStrategy
+Rules:
 
-Uses:
-
-- SpecifierSet (constraint logic)
-- Specifier Merge Engine
-
-Returns:
-
-```
-ResolvedRequirements
-ConflictReport
-```
+- PyPI + PyPI → merged via Specifier Merge Engine
+- Non-PyPI + Non-PyPI → must match exactly
+- Mixed types → conflict
 
 ---
 
@@ -186,12 +181,14 @@ ConflictReport
 
 Responsibilities:
 
-- Create venv
+- Create virtual environmnet
 - Upgrade pip/setuptools/wheel
-- Write temp requirements file
-- Install dependencies
+- Install dependencies in two phases:
 
-No merging logic here.
+1. PyPI dependencies (via requirements file)
+2. Non-PyPI dependencies (installed individually)
+
+This ensures correct dependency resolution order and prevents installation failures.
 
 ---
 
@@ -336,6 +333,7 @@ flowchart TD
 4. Clean separation of logic
 5. Reusable core independent of CLI
 6. Reproducibility over cleverness
+7. Separation of dependencies ypes (PyPI vs external source)
 
 ---
 

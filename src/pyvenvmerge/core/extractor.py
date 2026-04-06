@@ -9,15 +9,31 @@ def detect_source_type(line: str) -> str:
         return "editable"
     elif "git+" in line:
         return "git"
-    elif " @ file://" in line:
+    elif " @ " in line:
         return "file"
     else:
         return "pypi"
 
+def extract_name_from_line(line: str, source_type: str) -> str:
+    """
+    Extract a stable name for non-PyPI dependencies.
+    """
+
+    if source_type == "editable":
+        return line.replace("-e", "").strip()
+
+    if source_type == "git":
+        if "#egg=" in line:
+            return line.split("#egg=")[-1].lower()
+        return line.lower()
+
+    if source_type == "file":
+        # format: package @ file://...
+        return line.split("@")[0].strip().lower()
+
+    return line.lower()
+
 def extract_requirements(environment) -> dict[str, Requirement]:
-    """
-    Extracts pip freeze output and parses into structured Requirement objects.
-    """
 
     output = run([str(environment.python_path), "-m", "pip", "freeze"])
 
@@ -31,16 +47,13 @@ def extract_requirements(environment) -> dict[str, Requirement]:
 
         source_type = detect_source_type(line)
 
-        # Handle only PyPI packages for now
-        
         if source_type == "pypi":
-
             try:
                 parsed = PackagingRequirement(line)
 
-                normalized_name = parsed.name.lower()
+                name = parsed.name.lower()
 
-                requirements[normalized_name] = Requirement(
+                requirements[name] = Requirement(
                     name=parsed.name,
                     specifier=parsed.specifier,
                     extras=set(parsed.extras),
@@ -48,15 +61,15 @@ def extract_requirements(environment) -> dict[str, Requirement]:
                     source_type="pypi",
                     raw_line=line,
                 )
-            
+
             except Exception:
                 continue
-        
+
         else:
-            name = line.lower()
+            name = extract_name_from_line(line, source_type)
 
             requirements[name] = Requirement(
-                name=line,
+                name=name,
                 specifier=None,
                 extras=set(),
                 marker=None,
