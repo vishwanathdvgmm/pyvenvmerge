@@ -10,14 +10,13 @@ CLI[CLI Layer] --> Orchestrator[Application Orchestrator]
     Core --> ReqExtractor[Requirement Extractor]
     Core --> DepMerger[Dependency Merger]
     Core --> ConflictResolver[Conflict Resolver]
+    Core --> SpecMerge[Specifier Merge Engine]
     Core --> Executor[Environment Builder]
     Core --> IntegrityValidator[Integrity Validator]
 
     Core --> Infra[Infrastructure Layer]
 
     Infra --> SubprocessRunner[Subprocess Runner]
-    Infra --> FileUtils[File System Utilities]
-    Infra --> Logging[Logging]
 ```
 
 ---
@@ -36,6 +35,7 @@ Pyvenvmerge/
 │       │   ├── 🐍 merger.py
 │       │   ├── 🐍 planner.py
 │       │   ├── 🐍 resolver.py
+│       │   ├── 🐍 specifier_merge.py
 │       │   └── 🐍 validator.py
 │       ├── 📁 infra
 │       │   ├── 🐍 __init__.py
@@ -170,9 +170,8 @@ Strategies:
 
 Uses:
 
-```
-packaging.version.Version
-```
+- SpecifierSet (constraint logic)
+- Specifier Merge Engine
 
 Returns:
 
@@ -214,6 +213,19 @@ Ensures:
 
 - No broken requirements
 - No dependency conflicts
+
+---
+
+### 7️⃣ specifier_merge.py
+
+Responsible for:
+
+- Merging `SpecifierSet` constraints
+- Computing intersection of version ranges
+- Detecting incompatible constraints
+- Normalizing results (e.g., `>=1.0,<=1.0 → ==1.0`)
+
+This module forms the core of dependency resolution logic and is used by the resolver layer.
 
 ---
 
@@ -262,7 +274,9 @@ Represents:
 
 ```
 name
-version
+specifier (PEP 440 constraints)
+extras
+marker
 source_type (pypi, git, editable, file)
 raw_line
 ```
@@ -300,15 +314,16 @@ flowchart TD
     E[Extractor]
     F[Merger]
     G[Resolver]
+    S[Specifier Merge Engine]
 
-    H[Builder]
+    H[Executor]
     I[Validator]
     J[Report to CLI]
 
     A --> B --> C
     C --> D
     D --> E --> F --> G
-    G --> H --> I --> J
+    G --> S --> H --> I --> J
 ```
 
 ---

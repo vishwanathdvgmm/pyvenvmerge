@@ -2,20 +2,27 @@
 
 A CLI utility that safely merges multiple Python virtual environments by reconstructing dependencies instead of modifying venv internals.
 
-## Features (v0.2.0)
+---
 
-- Validates input virtual environments.
-- Enforces Python version consistency.
-- Extracts dependencies using `pip freeze`.
+## Features (v0.3.0)
+
+- Validates input virtual environments
+- Enforces Python version consistency
+- Extracts dependencies using "pip freeze"
+- Structured dependency parsing (PEP 508 compliant)
+- Specifier-based dependency merging
+- Accurate conflict detection using constraint intersection
 - Multiple conflict resolution strategies:
-    - `highest` (default)
-    - `strict`
-    - `unpinned`
-- Determines environment rebuild.
-- Dependencies integrity verification (`pip check`).
-- **Dry-run mode**
-- **Conflict reporting**
-- **JSON merge plan output**
+    - "highest" (default)
+    - "strict"
+    - "unpinned"
+- Deterministic environment rebuild
+- Dependency integrity verification ("pip check")
+- Dry-run mode
+- Conflict reporting
+- JSON merge plan output
+
+---
 
 ## Installation
 
@@ -23,11 +30,15 @@ A CLI utility that safely merges multiple Python virtual environments by reconst
 pip install pyvenvmerge
 ```
 
+---
+
 ## Usage
 
 ```bash
 pyvenvmerge envA envB -o mergedEnv
 ```
+
+---
 
 # Conflict Resolution Strategies:
 
@@ -40,6 +51,8 @@ pyvenvmerge envA envB -o mergedEnv --strategy strict
 pyvenvmerge envA envB -o mergedEnv --strategy unpinned
 ```
 
+---
+
 # Dry-Run Mode
 
 Preview the merge plan without creating an environment:
@@ -48,11 +61,15 @@ Preview the merge plan without creating an environment:
 pyvenvmerge envA envB --dry-run
 ```
 
+---
+
 # JSON Report
 
 ```bash
 pyvenvmerge envA envB --dry-run --report json
 ```
+
+---
 
 ### Limitations
 
@@ -64,17 +81,27 @@ Current limitations:
 
 Support for these may be added in future versions.
 
+---
+
+### Version Note
+
+v0.3 introduces a major internal upgrade:
+
+- Transition from version-based merging → specifier-based merging
+- Accurate dependency constraint intersection
+- Strategy-aware conflict resolution
+
+This significantly improves correctness and prepares the system for real-world dependency scenarios.
+
+---
+
 ### Architecture
 
 Detailed architecture documentation:
 
 [ARCHITECTURE](https://github.com/vishwanathdvgmm/pyvenvmerge/blob/main/ARCHITECTURE.md)
 
-Key fixes:
-
-- Version updated to **0.2.0**
-- Dry-run and JSON features added
-- Absolute GitHub architecture link (fixes PyPi 404)
+---
 
 ### License
 

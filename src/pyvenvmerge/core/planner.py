@@ -39,7 +39,7 @@ def create_merge_plan(env_paths: list[str], strategy: str) -> MergePlan:
         env_name = env.path.name
         for name, req in reqs.items():
             version_map.setdefault(name, {})
-            version_map[name][env_name] = req.version
+            version_map[name][env_name] = str(req.specifier) if req.specifier else ""
     
     conflicts_list = []
 
@@ -62,7 +62,7 @@ def create_merge_plan(env_paths: list[str], strategy: str) -> MergePlan:
     )
 
     for conflict in conflicts_list:
-        selected = merged_requirements[conflict.package].version
+        selected = str(merged_requirements[conflict.package].specifier) if merged_requirements[conflict.package].specifier else ""
         conflict.selected_version = selected
 
     return MergePlan(
