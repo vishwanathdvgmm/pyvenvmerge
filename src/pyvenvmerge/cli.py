@@ -57,24 +57,36 @@ def main():
             print("\nDry Run Summary")
             print("----------------")
             print(f"Python version: {plan.python_version}")
+
             if plan.conflicts:
                 print("\nConflicts detected:")
                 print("-----------------")
                 for conflict in plan.conflicts:
-                    print(conflict.package)
+                    print(f"{conflict.package} ({conflict.conflict_type})")
 
                     for env_name, version in conflict.versions_by_env.items():
                         print(f"  {env_name} → {version}")
-                    
+
                     print(f"  selected → {conflict.selected_version}")
-                    print(f"  strategy → {conflict.strategy}\n")
-            
+                    print(f"  strategy → {conflict.strategy}")
+
+                    if conflict.warnings:
+                        for w in conflict.warnings:
+                            print(f"  ⚠ {w}")
+                    print()
+
+            if plan.warnings:
+                print("\nWarnings:")
+                print("---------")
+                for w in plan.warnings:
+                    print(f"⚠ {w}")
+
             print("\nPackages to install:")
             print("----------------")
 
             for req in plan.merged_requirements.values():
                 print(f"  {req.raw_line}")
-            
+
             print("\nNo environment created.")
             return
         

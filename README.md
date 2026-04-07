@@ -4,7 +4,7 @@ A CLI utility that safely merges multiple Python virtual environments by reconst
 
 ---
 
-## Features (v0.4.0)
+## Features (v0.5.0)
 
 - Validates input virtual environments
 - Enforces Python version consistency
@@ -29,6 +29,19 @@ A CLI utility that safely merges multiple Python virtual environments by reconst
     - PyPI dependencies installed first.
     - Special depedencies installed separately.
 - Conflict detection for incompatible non-PyPI dependencies.
+
+### 🆕 v0.5 Additions
+
+- Conflict classification system:
+    - VERSION_CONFLICT
+    - PARTIAL_SPECIFIER
+- Warning generation for risky merges
+- Planner intelligence improvements
+- Dry-run output now includes:
+    - Conflict types
+    - Per-conflict warnings
+    - Global warnings
+- JSON report now includes warnings
 
 ---
 

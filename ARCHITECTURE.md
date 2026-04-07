@@ -94,7 +94,7 @@ Pseudo-flow:
 7. Run integrity check
 8. Generate report
 
-````
+```
 
 The orchestrator coordinates modules — it does not implement logic.
 
@@ -119,7 +119,7 @@ path: Path,
 python_version: str,
 interpreter_path: Path
 )
-````
+```
 
 ---
 
@@ -223,6 +223,36 @@ Responsible for:
 - Normalizing results (e.g., `>=1.0,<=1.0 → ==1.0`)
 
 This module forms the core of dependency resolution logic and is used by the resolver layer.
+
+---
+
+### 8️⃣ planner.py (v0.5 upgrade)
+
+Responsibilities extended to:
+
+- Conflict classification
+- Warning generation
+- Merge risk analysis
+
+Outputs:
+
+- Structured conflicts with types
+- Global warnings
+- Enriched MergePlan
+
+---
+
+### Conflict Intelligence Layer
+
+Introduced in v0.5.
+
+Adds semantic understanding of dependency conflicts:
+
+- Classifies conflict types
+- Generates warnings before execution
+- Enables safer dry-run analysis
+
+This layer improves decision visibility without modifying execution logic.
 
 ---
 

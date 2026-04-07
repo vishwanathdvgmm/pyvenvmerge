@@ -31,7 +31,7 @@ def create_merge_plan(env_paths: list[str], strategy: str) -> MergePlan:
     ]
 
     # Detect conflicts before merge
-    conflicts: list[Conflict] = {}
+    conflicts: list[Conflict] = []
 
     version_map: dict[str, dict[str, str]] = {}
 
@@ -42,18 +42,35 @@ def create_merge_plan(env_paths: list[str], strategy: str) -> MergePlan:
             version_map[name][env_name] = str(req.specifier) if req.specifier else ""
     
     conflicts_list = []
+    warnings = []
 
     for package, versions_by_env in version_map.items():
         unique_versions = set(versions_by_env.values())
+
         if len(unique_versions) > 1:
-            conflicts_list.append(
-                Conflict(
-                    package=package,
-                    versions_by_env=versions_by_env,
-                    selected_version="",
-                    strategy=strategy,
-                )
+
+            # Detect type
+            if "" in unique_versions:
+                conflict_type = "PARTIAL_SPECIFIER"
+            elif len(unique_versions) > 1:
+                conflict_type = "VERSION_CONFLICT"
+            else:
+                conflict_type = "UNKNOWN"
+
+            conflict = Conflict(
+                package=package,
+                versions_by_env=versions_by_env,
+                selected_version="",
+                strategy=strategy,
+                conflict_type=conflict_type,
             )
+
+            if conflict_type == "VERSION_CONFLICT":
+                warnings.append(
+                    f"{package}: multiple versions detected {unique_versions}"
+                )
+
+            conflicts_list.append(conflict)
 
     # Merge requirements
     merged_requirements = merge_requirements(
@@ -65,10 +82,16 @@ def create_merge_plan(env_paths: list[str], strategy: str) -> MergePlan:
         selected = str(merged_requirements[conflict.package].specifier) if merged_requirements[conflict.package].specifier else ""
         conflict.selected_version = selected
 
+        if conflict.conflict_type == "VERSION_CONFLICT":
+            conflict.warnings.append(
+                f"Selected version {selected} based on '{strategy}' strategy"
+            )
+
     return MergePlan(
         environments=environments,
         python_version=python_version,
         merged_requirements=merged_requirements,
         conflicts=conflicts_list,
+        warnings=warnings,
         strategy=strategy
     )
