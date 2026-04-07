@@ -4,7 +4,7 @@ A CLI utility that safely merges multiple Python virtual environments by reconst
 
 ---
 
-## Features (v0.5.0)
+## Features (v0.6.0)
 
 - Validates input virtual environments
 - Enforces Python version consistency
@@ -42,6 +42,18 @@ A CLI utility that safely merges multiple Python virtual environments by reconst
     - Per-conflict warnings
     - Global warnings
 - JSON report now includes warnings
+
+### 🆕 v0.6 Additions
+
+- Dependency graph analysis using installed metadata
+- Detection of transitive (indirect) dependency issues
+- Warning generation for dependency constraint violations
+- Planner now evaluates package relationships, not just versions
+
+Examples:
+
+- Detects when a package requires a dependency version that is not satisfied by the merged result
+- Emits warnings before environment creation
 
 ---
 
@@ -99,6 +111,8 @@ Current limitations:
 - No deep resolution for Git/file dependencies.
 - Dependency markers are not fully evaluated..
 - Extra merging is basic.
+- Dependency validation is heuristic (string-based)
+- Full semantic version resolution not yet implemented
 
 These will be improved in future versions.
 

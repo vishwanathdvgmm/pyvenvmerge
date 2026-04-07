@@ -21,12 +21,12 @@ CLI[CLI Layer] --> Orchestrator[Application Orchestrator]
 # 📁 Final Project Structure
 
 ```
-
 Pyvenvmerge/
 ├── 📁 src
 │ └── 📁 pyvenvmerge
 │ ├── 📁 core
 │ │ ├── 🐍 **init**.py
+│ │ ├── 🐍 dependency_graph.py
 │ │ ├── 🐍 executor.py
 │ │ ├── 🐍 extractor.py
 │ │ ├── 🐍 inspector.py
@@ -55,7 +55,6 @@ Pyvenvmerge/
 ├── 📄 LICENSE
 ├── 📝 README.md
 └── ⚙️ pyproject.toml
-
 ```
 
 ---
@@ -232,13 +231,12 @@ Responsibilities extended to:
 
 - Conflict classification
 - Warning generation
-- Merge risk analysis
+- Dependency graph analysis
 
-Outputs:
+New capabilities:
 
-- Structured conflicts with types
-- Global warnings
-- Enriched MergePlan
+- Detect indirect dependency violations.
+- Emit warnings for constraint mismatches.
 
 ---
 
@@ -253,6 +251,24 @@ Adds semantic understanding of dependency conflicts:
 - Enables safer dry-run analysis
 
 This layer improves decision visibility without modifying execution logic.
+
+---
+
+### 9️⃣ dependency_graph.py (v0.6 upgrade)
+
+Builds a dependency graph using Python package metadata.
+
+Uses:
+
+```bash
+importlib.metadata
+```
+
+Responsibilities:
+
+- Map package → dependencies
+- Provide dependency information to planner
+- Enable transitive conflict analysis
 
 ---
 
@@ -333,24 +349,49 @@ Useful for dry-run mode.
 
 ```mermaid
 flowchart TD
+
     A[User Input]
     B[CLI]
+
     C[Orchestrator]
 
     D[Inspector]
     E[Extractor]
+    L[Planner]
+
     F[Merger]
     G[Resolver]
     S[Specifier Merge Engine]
 
+    K[Dependency Graph]
+
     H[Executor]
     I[Validator]
+
     J[Report to CLI]
 
+    %% Input flow
     A --> B --> C
-    C --> D
-    D --> E --> F --> G
-    G --> S --> H --> I --> J
+
+    %% Inspection & extraction
+    C --> D --> E --> L
+
+    %% Planning internals
+    L --> F --> G
+    G -->|uses| S
+    L --> K
+
+    %% Plan returns to orchestrator
+    L --> C
+
+    %% Execution path
+    C --> H --> I --> J
+
+    %% Dry-run / final output
+    C --> J
+
+    %% Final output to CLI
+    J --> B
 ```
 
 ---
