@@ -1,3 +1,9 @@
+![PyPI](https://img.shields.io/pypi/v/pyvenvmerge)
+![Python](https://img.shields.io/pypi/pyversions/pyvenvmerge)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Status](https://img.shields.io/badge/status-active-success)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
+
 # pyvenvmerge
 
 A Python CLI utility for safely merging multiple virtual environments through deterministic dependency reconstruction instead of direct venv modification.
