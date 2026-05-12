@@ -25,7 +25,7 @@ Pyvenvmerge/
 ├── 📁 src
 │ └── 📁 pyvenvmerge
 │ ├── 📁 core
-│ │ ├── 🐍 **init**.py
+│ │ ├── 🐍 __init__.py
 │ │ ├── 🐍 dependency_graph.py
 │ │ ├── 🐍 executor.py
 │ │ ├── 🐍 extractor.py
@@ -36,18 +36,18 @@ Pyvenvmerge/
 │ │ ├── 🐍 specifier_merge.py
 │ │ └── 🐍 validator.py
 │ ├── 📁 infra
-│ │ ├── 🐍 **init**.py
+│ │ ├── 🐍 __init__.py
 │ │ ├── 🐍 exceptions.py
 │ │ └── 🐍 subprocess_runner.py
 │ ├── 📁 models
-│ │ ├── 🐍 **init**.py
+│ │ ├── 🐍 __init__.py
 │ │ ├── 🐍 conflict.py
 │ │ ├── 🐍 environment.py
 │ │ ├── 🐍 merge_plan.py
 │ │ ├── 🐍 merge_report.py
 │ │ └── 🐍 requirement.py
-│ ├── 🐍 **init**.py
-│ ├── 🐍 **main**.py
+│ ├── 🐍 __init__.py
+│ ├── 🐍 __main__.py
 │ ├── 🐍 cli.py
 │ └── 🐍 orchestrator.py
 ├── ⚙️ .gitignore
@@ -270,6 +270,8 @@ Responsibilities:
 - Provide dependency information to planner
 - Enable transitive conflict analysis
 
+Validation now preforms semantic evaluation instead of string comparison.
+
 ---
 
 # 🔷 Infrastructure Layer
@@ -345,6 +347,21 @@ Useful for dry-run mode.
 
 ---
 
+### Semantic Validation Layer (v0.7)
+
+Introduced semantic dependency reasoning using:
+
+- packaging.version.Version
+- packaging.specifiers.SpecifierSet
+
+Responsibilities:
+
+- Validate merged versions correctly
+- Detect invalid dependency selections
+- Improve dependency warning accuracy
+
+---
+
 # 🔄 Data Flow
 
 ```mermaid
@@ -405,6 +422,7 @@ flowchart TD
 5. Reusable core independent of CLI
 6. Reproducibility over cleverness
 7. Separation of dependencies ypes (PyPI vs external source)
+8. Semantic correctness over heuristic matching
 
 ---
 

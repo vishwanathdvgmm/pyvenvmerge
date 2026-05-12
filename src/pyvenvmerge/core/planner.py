@@ -7,6 +7,7 @@ from pyvenvmerge.models.merge_plan import MergePlan
 from pyvenvmerge.models.conflict import Conflict
 
 from packaging.requirements import Requirement as PackagingRequirement
+from packaging.version import Version, InvalidVersion
 
 def create_merge_plan(env_paths: list[str], strategy: str) -> MergePlan:
     """
@@ -115,16 +116,45 @@ def create_merge_plan(env_paths: list[str], strategy: str) -> MergePlan:
             if selected_dep.specifier and parsed.specifier:
 
                 # naive check: does selected version satisfy constraint string?
-                selected_str = str(selected_dep.specifier)
+                # Semantic dependency validation (v0.7)
 
-                if selected_str and str(parsed.specifier) not in selected_str:
+                selected_spec = selected_dep.specifier
 
-                    warning_msg = (
-                        f"{pkg_name} requires {dep}, "
-                        f"but selected {dep_name}{selected_str}"
-                    )
+                if selected_spec and parsed.specifier:
 
-                    warnings.append(warning_msg)
+                    try:
+                        selected_spec_str = str(selected_spec)
+
+                        # Extract exact selected version
+                        selected_version = None
+
+                        for token in selected_spec_str.split(","):
+                            token = token.strip()
+
+                            if token.startswith("=="):
+                                selected_version = token.replace("==", "").strip()
+                                break
+
+                            elif token.startswith(">="):
+                                selected_version = token.replace(">=", "").strip()
+
+                        if selected_version:
+
+                            version_obj = Version(selected_version)
+
+                            if not parsed.specifier.contains(version_obj):
+
+                                warning_msg = (
+                                    f"{pkg_name} requires "
+                                    f"{dep_name}{parsed.specifier}, "
+                                    f"but selected version is "
+                                    f"{selected_version}"
+                                )
+
+                                warnings.append(warning_msg)
+
+                    except InvalidVersion:
+                        continue
 
     return MergePlan(
         environments=environments,
