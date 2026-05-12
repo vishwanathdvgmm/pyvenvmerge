@@ -30,35 +30,47 @@ flowchart TD
 ```
 Pyvenvmerge/
 ├── 📁 src
-│ └── 📁 pyvenvmerge
-│ ├── 📁 core
-│ │ ├── 🐍 __init__.py
-│ │ ├── 🐍 dependency_graph.py
-│ │ ├── 🐍 executor.py
-│ │ ├── 🐍 extractor.py
-│ │ ├── 🐍 inspector.py
-│ │ ├── 🐍 merger.py
-│ │ ├── 🐍 planner.py
-│ │ ├── 🐍 resolver.py
-│ │ ├── 🐍 specifier_merge.py
-│ │ └── 🐍 validator.py
-│ ├── 📁 infra
-│ │ ├── 🐍 __init__.py
-│ │ ├── 🐍 exceptions.py
-│ │ └── 🐍 subprocess_runner.py
-│ ├── 📁 models
-│ │ ├── 🐍 __init__.py
-│ │ ├── 🐍 conflict.py
-│ │ ├── 🐍 environment.py
-│ │ ├── 🐍 merge_plan.py
-│ │ ├── 🐍 merge_report.py
-│ │ └── 🐍 requirement.py
-│ ├── 🐍 __init__.py
-│ ├── 🐍 __main__.py
-│ ├── 🐍 cli.py
-│ └── 🐍 orchestrator.py
+│   └── 📁 pyvenvmerge
+│       ├── 📁 core
+│       │   ├── 🐍 __init__.py
+│       │   ├── 🐍 dependency_graph.py
+│       │   ├── 🐍 executor.py
+│       │   ├── 🐍 extractor.py
+│       │   ├── 🐍 inspector.py
+│       │   ├── 🐍 merger.py
+│       │   ├── 🐍 planner.py
+│       │   ├── 🐍 reporting.py
+│       │   ├── 🐍 resolver.py
+│       │   ├── 🐍 specifier_merge.py
+│       │   └── 🐍 validator.py
+│       ├── 📁 infra
+│       │   ├── 🐍 __init__.py
+│       │   ├── 🐍 exceptions.py
+│       │   └── 🐍 subprocess_runner.py
+│       ├── 📁 models
+│       │   ├── 🐍 __init__.py
+│       │   ├── 🐍 conflict.py
+│       │   ├── 🐍 environment.py
+│       │   ├── 🐍 merge_plan.py
+│       │   ├── 🐍 merge_report.py
+│       │   └── 🐍 requirement.py
+│       ├── 🐍 __init__.py
+│       ├── 🐍 __main__.py
+│       ├── 🐍 cli.py
+│       └── 🐍 orchestrator.py
+├── 📁 tests
+│   ├── 🐍 test_conflicts.py
+│   ├── 🐍 test_dependency_types.py
+│   ├── 🐍 test_integration_merge.py
+│   ├── 🐍 test_json_output.py
+│   ├── 🐍 test_merger.py
+│   ├── 🐍 test_planner.py
+│   ├── 🐍 test_reporting.py
+│   ├── 🐍 test_specifier_merge.py
+│   └── 🐍 test_strategies.py
 ├── ⚙️ .gitignore
 ├── 📝 ARCHITECTURE.md
+├── 📝 CHANGELOG.md
 ├── 📄 LICENSE
 ├── 📝 README.md
 └── ⚙️ pyproject.toml

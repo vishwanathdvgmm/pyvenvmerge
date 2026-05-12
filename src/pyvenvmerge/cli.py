@@ -4,6 +4,11 @@ import sys
 from pyvenvmerge.orchestrator import merge_environments
 from pyvenvmerge.core.planner import create_merge_plan
 from pyvenvmerge.infra.exceptions import PyvenvmergeError
+from pyvenvmerge.core.reporting import (
+    generate_report,
+    save_json_report,
+    save_lockfile,
+)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -43,11 +48,28 @@ def main():
         help="Output format for dry-run reports"
     )
 
+    parser.add_argument(
+        "--save-report",
+        help="Save merge report to JSON file"
+    )
+
+    parser.add_argument(
+        "--export-lock",
+        help="Export deterministic lockfile"
+    )
+
     args = parser.parse_args()
 
     try:
         if args.dry_run:
             plan = create_merge_plan(args.envs, args.strategy)
+            report = generate_report(plan)
+
+            if args.save_report:
+                save_json_report(report, args.save_report)
+
+            if args.export_lock:
+                save_lockfile(plan, args.export_lock)
 
             if args.report == "json":
                 import json

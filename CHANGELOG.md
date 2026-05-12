@@ -6,6 +6,40 @@ The project follows incremental internal releases while maintaining stable publi
 
 ---
 
+# v0.9.0
+
+## Added
+
+- Compatibility scoring integrated into merge plans
+- Merge risk classification system
+- Quantified merge safety analysis
+- Risk-aware dry-run diagnostics
+- JSON compatibility metrics output
+- Enhanced CLI diagnostics visibility
+
+## Diagnostics
+
+- Compatibility Score (0–100)
+- Risk Level:
+    - LOW
+    - MEDIUM
+    - HIGH
+
+## Improved
+
+- Dry-run reporting clarity
+- Merge safety visibility
+- Warning aggregation logic
+
+## Example
+
+```bash
+Compatibility Score: 82/100
+Risk Level: MEDIUM
+```
+
+---
+
 # v0.8.0
 
 ## Added
