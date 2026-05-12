@@ -232,6 +232,9 @@ Responsibilities extended to:
 - Conflict classification
 - Warning generation
 - Dependency graph analysis
+- Merge scoring
+- Risk classification
+- Safety metric generation
 
 New capabilities:
 
@@ -359,6 +362,19 @@ Responsibilities:
 - Validate merged versions correctly
 - Detect invalid dependency selections
 - Improve dependency warning accuracy
+
+---
+
+### Compatibility Analysis Layer (v0.8)
+
+Introduced quantitative merge safety analysis.
+
+Responsibilities:
+
+- Compute compatibility score
+- Estimate merge risk
+- Penalize unsafe dependency combinations
+- Provide safety diagnostics before execution
 
 ---
 

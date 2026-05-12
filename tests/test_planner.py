@@ -60,3 +60,34 @@ def test_semantic_warning_generation():
         warnings.append("invalid")
 
     assert "invalid" in warnings
+
+def test_risk_fields_exist():
+
+    env = Environment(
+        path=Path("envA"),
+        python_path=Path("envA/python"),
+        python_version="3.12"
+    )
+
+    from packaging.specifiers import SpecifierSet
+
+    req = Requirement(
+        "numpy",
+        SpecifierSet("==1.0"),
+        set(),
+        None,
+        "pypi",
+        "numpy==1.0"
+    )
+
+    plan = MergePlan(
+        environments=[env],
+        python_version="3.12",
+        merged_requirements={"numpy": req},
+        compatibility_score=85,
+        risk_level="MEDIUM",
+        strategy="highest"
+    )
+
+    assert plan.compatibility_score == 85
+    assert plan.risk_level == "MEDIUM"

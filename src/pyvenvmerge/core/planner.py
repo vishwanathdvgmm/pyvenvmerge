@@ -9,6 +9,15 @@ from pyvenvmerge.models.conflict import Conflict
 from packaging.requirements import Requirement as PackagingRequirement
 from packaging.version import Version, InvalidVersion
 
+def calculate_risk_level(score: int) -> str:
+    if score >= 90:
+        return "LOW"
+    
+    if score >=70:
+        return "MEDIUM"
+    
+    return "HIGH"
+
 def create_merge_plan(env_paths: list[str], strategy: str) -> MergePlan:
     """
     Creates a MergePlan describing how environments will be merged.
@@ -156,11 +165,43 @@ def create_merge_plan(env_paths: list[str], strategy: str) -> MergePlan:
                     except InvalidVersion:
                         continue
 
+    # ----------------------------
+    # Compatibility Scoring (v0.8)
+    # ----------------------------
+
+    compatibility_score = 100
+
+    for conflict in conflicts_list:
+
+        if conflict.conflict_type == "VERSION_CONFLICT":
+            compatibility_score -= 10
+
+        elif conflict.conflict_type == "PARTIAL_SPECIFIER":
+            compatibility_score -= 5
+
+    # Dependency warnings
+    for w in warnings:
+        if "requires" in w:
+            compatibility_score -= 20
+
+    # Non-PyPI dependency penalties
+    for req in merged_requirements.values():
+
+        if req.source_type != "pypi":
+            compatibility_score -= 8
+
+    # Clamp score
+    compatibility_score = max(0, compatibility_score)
+
+    risk_level = calculate_risk_level(compatibility_score)
+
     return MergePlan(
         environments=environments,
         python_version=python_version,
         merged_requirements=merged_requirements,
         conflicts=conflicts_list,
         warnings=warnings,
+        compatibility_score=compatibility_score,
+        risk_level=risk_level,
         strategy=strategy
     )

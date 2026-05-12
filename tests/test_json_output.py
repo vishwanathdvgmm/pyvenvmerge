@@ -37,3 +37,5 @@ def test_merge_plan_to_dict():
     assert data["packages"] == ["numpy==1.0"]
     assert data["conflicts"][0]["type"] == "VERSION_CONFLICT"
     assert "warnings" in data
+    assert "compatibility_score" in data
+    assert "risk_level" in data

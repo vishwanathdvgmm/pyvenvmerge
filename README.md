@@ -4,7 +4,7 @@ A CLI utility that safely merges multiple Python virtual environments by reconst
 
 ---
 
-## Features (v0.7.0)
+## Features (v0.8.0)
 
 - Validates input virtual environments
 - Enforces Python version consistency
@@ -69,6 +69,29 @@ Examples:
 - Detects invalid selections such as:
     - package requires `numpy<2.0`
     - merged result selects `numpy==2.4.2`
+
+### 🆕 v0.8 Additions
+
+- Compatibility scoring engine
+- Merge risk classification
+- Quantified merge safety analysis
+- Risk-aware dry-run diagnostics
+- JSON safety metrics output
+
+New diagnostics:
+
+- Compatibility Score (0–100)
+- Risk Level:
+    - LOW
+    - MEDIUM
+    - HIGH
+
+Example:
+
+```bash
+Compatibility Score: 72/100
+Risk Level: MEDIUM
+```
 
 ---
 

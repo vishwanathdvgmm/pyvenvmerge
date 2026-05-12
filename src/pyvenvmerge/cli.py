@@ -57,6 +57,8 @@ def main():
             print("\nDry Run Summary")
             print("----------------")
             print(f"Python version: {plan.python_version}")
+            print(f"Compatibility Score: {plan.compatibility_score}/100")
+            print(f"Risk Level: {plan.risk_level}")
 
             if plan.conflicts:
                 print("\nConflicts detected:")
