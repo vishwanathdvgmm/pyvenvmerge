@@ -2,18 +2,25 @@
 
 ```mermaid
 flowchart TD
-CLI[CLI Layer] --> Orchestrator[Application Orchestrator]
+    CLI[CLI Layer]
+    ORCH[Application Orchestrator]
 
-    Orchestrator --> Core[Core Services]
+    CLI --> ORCH
 
-    Core --> EnvInspector[Environment Inspector]
-    Core --> ReqExtractor[Requirement Extractor]
-    Core --> DepMerger[Dependency Merger]
-    Core --> ConflictResolver[Conflict Resolver]
-    Core --> SpecMerge[Specifier Merge Engine]
-    Core --> Executor[Environment Builder]
-    Core --> IntegrityValidator[Integrity Validator]
+    ORCH --> INSPECTOR[Environment Inspector]
+    ORCH --> EXTRACTOR[Requirement Extractor]
+    ORCH --> PLANNER[Merge Planner]
+    ORCH --> EXECUTOR[Environment Executor]
+    ORCH --> VALIDATOR[Integrity Validator]
 
+    PLANNER --> MERGER[Dependency Merger]
+    PLANNER --> RESOLVER[Conflict Resolver]
+    RESOLVER --> SPECMERGE[Specifier Merge Engine]
+    PLANNER --> DEPGRAPH[Dependency Graph]
+
+    ORCH --> REPORTING[Reporting Layer]
+
+    REPORTING --> CLI
 ```
 
 ---
@@ -65,58 +72,58 @@ Pyvenvmerge/
 
 Responsibilities:
 
-- Parse arguments
-- Validate input paths
-- Pass config to orchestrator
-- Handle exit codes
+- Parse command-line arguments
+- Validate CLI input
+- Trigger dry-run or execution mode
+- Format console/JSON output
+- Handle exit codes and user-facing errors
 
-No business logic here.
+This layer contains no merge logic.
 
 ---
 
-# 🔷 Layer 2 — Orchestrator
+# 🔷 Layer 2 — Orchestrator Layer
 
 `orchestrator.py`
 
-Central control flow.
+Coordinates the ull merge workflow.
 
-Pseudo-flow:
+Execution flow:
 
-```
-
+```text
 1. Inspect environments
 2. Extract dependencies
-3. Merge dependency sets
+3. Create MergePlan
 4. Resolve conflicts
-5. Create MergePlan
-6. Execute plan (create environment + install packages)
-7. Run integrity check
-8. Generate report
-
+5. Execute merge
+6. Validate final environment
+7. Generate output report
 ```
 
-The orchestrator coordinates modules — it does not implement logic.
+The orchestrator delegates all implementation details to lower layers.
 
 ---
 
-# 🔷 Layer 3 — Core Modules
+# 🔷 Layer 3 — Core Processing Layer
 
 ### 1️⃣ inspector.py
 
-Validates:
+Validates Python virtual environments:
 
-- Path exists
-- pyvenv.cfg exists
-- Python executable exists
+Checks:
+
+- Environment path existence
+- `pyvenv.cfg` presence
+- Python interpreter existence
 - Python version compatibility
 
 Returns:
 
 ```Python
 Environment(
-path: Path,
-python_version: str,
-interpreter_path: Path
+    path: Path,
+    python_version: str,
+    interpreter_path: Path
 )
 ```
 
@@ -124,156 +131,147 @@ interpreter_path: Path
 
 ### 2️⃣ extractor.py
 
-Extracts dependencies using:
+Extracts and parses dependencies using:
 
 ```bash
 python -m pip freeze
 ```
 
-Returns:
+Supported dependency types:
 
-```python
-dict[str, Requirement]
-```
-
-Handles:
-
-- PyPI dependencies
+- PyPI packages
 - Editable installs (`-e`)
 - Git dependencies (`git+...`)
 - File dependencies (`package @ file://...`)
 
-Classifies each dependency by `source_type` and extracts stable identifiers for merging.
+Produces structured `Requirement` objects.
 
 ---
 
 ### 3️⃣ merger.py
 
-Combines multiple requirement dictionaries.
+Combines dependency collections from multiple environments.
 
-Output:
+Responsibilities:
 
-```
-MergedRequirements
-```
+- Aggregate package requirements
+- Forward conflicts to resolver layer
+- Produce unified dependency mapping
 
-Does not resolve conflicts — just aggregates.
+No version resolution logic exists here.
 
 ---
 
 ### 4️⃣ resolver.py
 
-Resolver now distinguishes between:
+Handles dependency conflict resolution.
 
-- PyPI dependencies → merged using specifier logic
-- Non-PyPI dependencies → pass-through or conflict
+Supported strategies:
 
-Rules:
+- `highest`
+- `strict`
+- `unpinned`
 
-- PyPI + PyPI → merged via Specifier Merge Engine
-- Non-PyPI + Non-PyPI → must match exactly
-- Mixed types → conflict
+Resolution behavior:
+
+| Dependency Type | Behavior               |
+| --------------- | ---------------------- |
+| PyPI            | Specifier-based merge  |
+| Non-PyPI        | Exact-match validation |
+| Mixed Source    | Conflict               |
 
 ---
 
-### 5️⃣ executor.py
+### 5️⃣ specifier_merge.py
+
+Core semantic version resolution engine.
 
 Responsibilities:
 
-- Create virtual environmnet
-- Upgrade pip/setuptools/wheel
-- Install dependencies in two phases:
+- Merge `SpecifierSet` constraints
+- Compute valid version intersections
+- Detect incompatible constraints
+- Normalize merged constraints
 
-1. PyPI dependencies (via requirements file)
-2. Non-PyPI dependencies (installed individually)
+Examples:
 
-This ensures correct dependency resolution order and prevents installation failures.
-
----
-
-### 6️⃣ validator.py
-
-Runs:
-
-```bash
-pip check
+```text
+>=1.0 + <=1.0 → ==1.0
 ```
 
-Returns:
-
-```
-ValidationResult
-```
-
-Ensures:
-
-- No broken requirements
-- No dependency conflicts
+Used internally by resolver strategies.
 
 ---
 
-### 7️⃣ specifier_merge.py
+### 6️⃣ dependency_graph.py (v0.6 upgrade)
 
-Responsible for:
+Builds package relationship graph using:
 
-- Merging `SpecifierSet` constraints
-- Computing intersection of version ranges
-- Detecting incompatible constraints
-- Normalizing results (e.g., `>=1.0,<=1.0 → ==1.0`)
-
-This module forms the core of dependency resolution logic and is used by the resolver layer.
-
----
-
-### 8️⃣ planner.py (v0.5 upgrade)
-
-Responsibilities extended to:
-
-- Conflict classification
-- Warning generation
-- Dependency graph analysis
-- Merge scoring
-- Risk classification
-- Safety metric generation
-
-New capabilities:
-
-- Detect indirect dependency violations.
-- Emit warnings for constraint mismatches.
-
----
-
-### Conflict Intelligence Layer
-
-Introduced in v0.5.
-
-Adds semantic understanding of dependency conflicts:
-
-- Classifies conflict types
-- Generates warnings before execution
-- Enables safer dry-run analysis
-
-This layer improves decision visibility without modifying execution logic.
-
----
-
-### 9️⃣ dependency_graph.py (v0.6 upgrade)
-
-Builds a dependency graph using Python package metadata.
-
-Uses:
-
-```bash
+```python
 importlib.metadata
 ```
 
 Responsibilities:
 
-- Map package → dependencies
-- Provide dependency information to planner
-- Enable transitive conflict analysis
+- Map package dependencies
+- Enable transitive dependency analysis
+- Support semantic validation logic
 
-Validation now preforms semantic evaluation instead of string comparison.
+---
+
+### 7️⃣ planner.py (v0.5 upgrade)
+
+Central analysis engine for merge planning.
+
+Responsibilities:
+
+- Conflict classification
+- Dependency validation
+- Warning generation
+- Compatibility analysis
+- Risk estimation
+- Merge scoring
+
+Planner outputs a complete `MergePlan` before execution.
+
+---
+
+### 8️⃣ executor.py
+
+Builds the merged virtual environment.
+
+Responsibilities:
+
+- Create target environment
+- Upgrade base tooling
+- Install dependencies
+- Separate installation phases
+
+Installation pipeline:
+
+```text
+Phase 1 → PyPI dependencies
+Phase 2 → External dependencies
+```
+
+This improves installation stability and reproducibility.
+
+---
+
+### 9️⃣ validator.py
+
+Performs final integrity verification.
+
+Uses:
+
+```bash
+pip check
+```
+
+Ensures:
+
+- No broken requirements
+- No unresolved dependency conflicts
 
 ---
 
@@ -281,100 +279,113 @@ Validation now preforms semantic evaluation instead of string comparison.
 
 ### subprocess_runner.py
 
-Centralized wrapper:
+Centralized subprocess execution wrapper.
 
-- Capture stdout
-- Capture stderr
-- Handle non-zero exit
-- Timeout handling
+Responsibilities:
 
-Prevents scattered subprocess logic.
+- Process execution
+- stdout/stderr capture
+- Exit-code handling
+- Timeout management
 
----
-
-### filesystem.py
-
-Utilities:
-
-- Write temporary requirement file
-- Remove temp files
-- Validate directory structure
+Prevents subprocess duplication across modules.
 
 ---
 
-### logger.py
+### exceptions.py
 
-Optional but recommended.
+Defines project-specific exception hierarchy.
 
-- Structured logging
-- Verbosity control
-- Debug mode
+Provides:
+
+- Consistent failure handling
+- Structured error propagation
+- Cleaner CLI reporting
 
 ---
 
 # 🔷 Models Layer
 
-Keep data structured.
+Structured internal data representation.
+
+---
 
 ### requirement.py
 
-Represents:
+Represents parsed dependency metadata.
 
-```
+Fields:
+
+```text
 name
-specifier (PEP 440 constraints)
+specifier
 extras
 marker
-source_type (pypi, git, editable, file)
+source_type
 raw_line
 ```
+
+Supports PEP 400 / PEP 508 semantics.
 
 ---
 
 ### environment.py
 
-Represents validated venv.
+Represents validated virtual environments.
+
+Stores:
+
+- Environment path
+- Interpreter path
+- Python version
+
+---
+
+### merge_plan.py
+
+Represents the full merge execution plan.
+
+Contains:
+
+- Environments
+- Merged dependencies
+- Conflicts
+- Warnings
+- Compatibility score
+- Risk level
+
+Used by:
+
+- Dry-run mode
+- JSON reporting
+- Execution layer
 
 ---
 
 ### merge_report.py
 
-Tracks:
+Reserved reporting abstraction layer.
 
-- Conflicts
-- Selected versions
-- Ignored packages
-- Warnings
+Intended future usage:
 
-Useful for dry-run mode.
-
----
-
-### Semantic Validation Layer (v0.7)
-
-Introduced semantic dependency reasoning using:
-
-- packaging.version.Version
-- packaging.specifiers.SpecifierSet
-
-Responsibilities:
-
-- Validate merged versions correctly
-- Detect invalid dependency selections
-- Improve dependency warning accuracy
+- Persistant reports
+- Export formats
+- Structured audit output
 
 ---
 
-### Compatibility Analysis Layer (v0.8)
+### Compatibility Analysis System
 
-Introduced quantitative merge safety analysis.
+The planner performs safety analysis before execution.
 
-Responsibilities:
+Metrics include:
 
-- Compute compatibility score
-- Estimate merge risk
-- Penalize unsafe dependency combinations
-- Provide safety diagnostics before execution
+| Metric                  | Purpose                               |
+| ----------------------- | ------------------------------------- |
+| Compatibility Score     | Quantifies merge stability            |
+| Risk Level              | Estimates merge risk                  |
+| Conflict Classification | Identifies conflict severity          |
+| Semantic Validation     | Detects invalid dependency selections |
 
 ---
 
@@ -384,94 +395,89 @@ Responsibilities:
 flowchart TD
 
     A[User Input]
-    B[CLI]
+    B[CLI Layer]
 
     C[Orchestrator]
 
     D[Inspector]
     E[Extractor]
-    L[Planner]
+    F[Planner]
 
-    F[Merger]
-    G[Resolver]
-    S[Specifier Merge Engine]
+    G[Merger]
+    H[Resolver]
+    I[Specifier Merge Engine]
 
-    K[Dependency Graph]
+    J[Dependency Graph]
 
-    H[Executor]
-    I[Validator]
+    K[Executor]
+    L[Validator]
 
-    J[Report to CLI]
+    M[Report Generation]
 
-    %% Input flow
     A --> B --> C
 
-    %% Inspection & extraction
-    C --> D --> E --> L
+    C --> D
+    D --> E
+    E --> F
 
-    %% Planning internals
-    L --> F --> G
-    G -->|uses| S
-    L --> K
+    F --> G
+    G --> H
+    H --> I
 
-    %% Plan returns to orchestrator
-    L --> C
+    F --> J
 
-    %% Execution path
-    C --> H --> I --> J
+    F --> C
 
-    %% Dry-run / final output
-    C --> J
+    C --> K
+    K --> L
 
-    %% Final output to CLI
-    J --> B
+    C --> M
+    M --> B
 ```
 
 ---
 
 # 🧠 Design Principles
 
-1. No direct filesystem editing of venv internals
-2. Deterministic rebuild
+1. No direct modification of venv internals
+2. Deterministic environment reconstruction
 3. Strategy-based conflict resolution
-4. Clean separation of logic
+4. Strict layer separation
 5. Reusable core independent of CLI
-6. Reproducibility over cleverness
-7. Separation of dependencies ypes (PyPI vs external source)
-8. Semantic correctness over heuristic matching
+6. Semantic correctness over heuristic matching
+7. Explicit dependency source classification
+8. Predictable and reproducible execution
 
 ---
 
-# 📦 Future Extensibility
+# 📦 Future Directions
 
-You can later add:
+Planned extensions:
 
 - Lockfile generation
-- JSON output mode
-- Dry-run report mode
 - Interactive conflict resolution
-- Support for pyproject.toml export
-- Parallel pip install
-- Caching layer
-
-Architecture already supports that.
+- Dependency caching
+- Parallel installation
+- Exportable merge reports
+- Advanced semantic resolution
+- pyproject.toml export support
 
 ---
 
 # 🔐 Failure Handling Design
 
-Every stage must:
+Every processing stage follows:
 
-- Fail fast
-- Provide clear error
-- Return structured result
+- Fail-fast behavior
+- Structured error reporting
+- Deterministic rollback semantics
 
 Exit codes:
 
-| Code | Meaning                        |
-| ---- | ------------------------------ |
-| 0    | Success                        |
-| 1    | Invalid environment            |
-| 2    | Version conflict (strict mode) |
-| 3    | Installation failure           |
-| 4    | Validation failure             |
+| Code | Meaning              |
+| ---- | -------------------- |
+| 0    | Success              |
+| 1    | Invalid environment  |
+| 2    | Dependency conflict  |
+| 3    | Installation failure |
+| 4    | Validation failure   |

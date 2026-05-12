@@ -1,96 +1,59 @@
 # pyvenvmerge
 
-A CLI utility that safely merges multiple Python virtual environments by reconstructing dependencies instead of modifying venv internals.
+A Python CLI utility for safely merging multiple virtual environments through deterministic dependency reconstruction instead of direct venv modification.
 
 ---
 
-## Features (v0.8.0)
+## Features
 
-- Validates input virtual environments
-- Enforces Python version consistency
-- Extracts dependencies using `pip freeze`
-- Structured dependency parsing (PEP 508 compliant)
-- Specifier-based dependency merging
-- Accurate conflict detection using constraint intersection
-- Multiple conflict resolution strategies:
-    - `highest` (default)
-    - `strict`
-    - `unpinned`
+### Environment Analysis
+
+- Virtual environment validation
+- Python version compatibility checks
+- Dependency extraction using `pip freeze`
+
+### Dependency Resolution
+
+- PEP 508 compliant parsing
+- Specifier-based merging
+- Conflict detection and resolution
+- Semantic dependency validation
+
+### Merge Intelligence
+
+- Dependency graph analysis
+- Conflict classification
+- Risk analysis and compatibility scoring
+- Dry-run diagnostics
+
+### Dependency Support
+
+- PyPI packages
+- Editable installs (`-e`)
+- Git dependencies (`git+...`)
+- File dependencies (`package @ file://...`)
+
+### Reliability
+
 - Deterministic environment rebuild
-- Dependency integrity verification (`pip check`)
-- Dry-run mode
-- Conflict reporting
-- JSON merge plan output
-- Support for **editable installs (`-e`)**
-- Support for **Git dependencies (`git+...`)**
-- Support for **file-based dependencies (`package @ file://...`)**
-- Safe handling of non-PyPI dependencies during merge
-- Two-phase installation pipeline:
-    - PyPI dependencies installed first.
-    - Special depedencies installed separately.
-- Conflict detection for incompatible non-PyPI dependencies.
+- Two-phase installation pipeline
+- Integrity verification using `pip check`
+- JSON merge reports
 
-### 🆕 v0.5 Additions
-
-- Conflict classification system:
-    - VERSION_CONFLICT
-    - PARTIAL_SPECIFIER
-- Warning generation for risky merges
-- Planner intelligence improvements
-- Dry-run output now includes:
-    - Conflict types
-    - Per-conflict warnings
-    - Global warnings
-- JSON report now includes warnings
-
-### 🆕 v0.6 Additions
-
-- Dependency graph analysis using installed metadata
-- Detection of transitive (indirect) dependency issues
-- Warning generation for dependency constraint violations
-- Planner now evaluates package relationships, not just versions
-
-Examples:
-
-- Detects when a package requires a dependency version that is not satisfied by the merged result
-- Emits warnings before environment creation
-
-### 🆕 v0.7 Additions
-
-- Semantic dependency validation using:
-    - `packaging.version.Version`
-    - `packaging.specifiers.SpecifierSet`
-- Accurate dependency constraint checking
-- Proper validation of merged dependency versions
-- Improved dependency warning precision
-
-Examples:
-
-- Detects invalid selections such as:
-    - package requires `numpy<2.0`
-    - merged result selects `numpy==2.4.2`
-
-### 🆕 v0.8 Additions
-
-- Compatibility scoring engine
-- Merge risk classification
-- Quantified merge safety analysis
-- Risk-aware dry-run diagnostics
-- JSON safety metrics output
-
-New diagnostics:
-
-- Compatibility Score (0–100)
-- Risk Level:
-    - LOW
-    - MEDIUM
-    - HIGH
-
-Example:
+### Example
 
 ```bash
-Compatibility Score: 72/100
-Risk Level: MEDIUM
+pyvenvmerge envA envB --dry-run
+```
+
+Example output:
+
+```text
+Compatibility Score : 82/100
+Risk Level          : MEDIUM
+
+Warnings:
+⚠ pandas requires numpy<2.0 but selected version is 2.4.2
 ```
 
 ---
@@ -111,7 +74,7 @@ pyvenvmerge envA envB -o mergedEnv
 
 ---
 
-# Conflict Resolution Strategies:
+## Conflict Resolution Strategies
 
 ```bash
 pyvenvmerge envA envB -o mergedEnv --strategy highest
@@ -124,7 +87,7 @@ pyvenvmerge envA envB -o mergedEnv --strategy unpinned
 
 ---
 
-# Dry-Run Mode
+## Dry-Run Mode
 
 Preview the merge plan without creating an environment:
 
@@ -134,7 +97,7 @@ pyvenvmerge envA envB --dry-run
 
 ---
 
-# JSON Report
+## JSON Report
 
 ```bash
 pyvenvmerge envA envB --dry-run --report json
@@ -142,38 +105,29 @@ pyvenvmerge envA envB --dry-run --report json
 
 ---
 
-### Limitations
+## Limitations
 
 Current limitations:
 
 - No deep resolution for Git/file dependencies.
-- Dependency markers are not fully evaluated..
+- Environment markers are partially evaluated.
 - Extra merging is basic.
 - Advanced specifiers such as !=, ~=, === are not fully optimized yet.
-- Full semantic version resolution not yet implemented
+- Complex specifier combination are not fully optimized yet.
 
 These will be improved in future versions.
 
 ---
 
-### Version Note
+## Documentation
 
-v0.4 extends the system to handle real-world environments:
-
-- Introduces support for non-PyPI depenencies.
-- Improves installation correctness with staged installs.
-- Adds safety checks for incompatible external dependencies..
-
-## This version makes the tool usable on practical projects.
-
-### Architecture
-
-Detailed architecture documentation:
+Detailed documentation:
 
 [ARCHITECTURE](https://github.com/vishwanathdvgmm/pyvenvmerge/blob/main/ARCHITECTURE.md)
+[CHANGELOG](https://github.com/vishwanathdvgmm/pyvenvmerge/blob/main/CHANGELOG.md)
 
 ---
 
-### License
+## License
 
 MIT License
