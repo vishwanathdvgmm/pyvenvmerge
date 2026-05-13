@@ -46,6 +46,14 @@ A Python CLI utility for safely merging multiple virtual environments through de
 - Integrity verification using `pip check`
 - JSON merge reports
 
+### Reporting & Reproducibility
+
+- Structured merge report generation
+- JSON report export
+- Deterministic lockfile export
+- Resuable report generation layer
+- Serializable merge metadata artifacts
+
 ### Example
 
 ```bash
@@ -76,6 +84,18 @@ pip install pyvenvmerge
 
 ```bash
 pyvenvmerge envA envB -o mergedEnv
+```
+
+### Save structured data
+
+```bash
+pyvenvmerge envA envB --dry-run --save-report report.json
+```
+
+### Export deterministic lockfile
+
+```bash
+pyvenvmerge envA envB --dry-run --export-lock requirements.lock
 ```
 
 ---

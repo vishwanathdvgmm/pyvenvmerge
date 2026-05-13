@@ -1,6 +1,6 @@
 [project]
 name = "pyvenvmerge"
-version = "0.9.0"
+version = "1.0.0"
 authors = [{ name="Vishwanath M M", email="vishwanathmm2005@gmail.com" }]
 description = "Safely merge multiple Python virtual environments by reconstructing dependencies."
 readme = "README.md"

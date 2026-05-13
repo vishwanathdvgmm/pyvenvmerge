@@ -1,7 +1,6 @@
 from importlib.metadata import distributions
 from packaging.requirements import Requirement as PackagingRequirement
 
-
 def build_dependency_graph():
     """
     Builds dependency graph using installed metadata.

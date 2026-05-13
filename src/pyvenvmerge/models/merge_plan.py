@@ -1,10 +1,15 @@
 from dataclasses import dataclass, field
+
+from pyvenvmerge.models.conflict import Conflict
 from pyvenvmerge.models.environment import Environment
 from pyvenvmerge.models.requirement import Requirement
-from pyvenvmerge.models.conflict import Conflict
 
 @dataclass
 class MergePlan:
+    """
+    Represents the full merge decision model
+    before environment execution.
+    """
     environments: list[Environment]
     python_version: str
     merged_requirements: dict[str, Requirement]
@@ -23,10 +28,17 @@ class MergePlan:
             "strategy": self.strategy,
             "compatibility_score": self.compatibility_score,
             "risk_level": self.risk_level,
-            "environments": [str(env.path) for env in self.environments],
-            "conflicts": [c.to_dict() for c in self.conflicts],
+            "environments": [
+                str(env.path)
+                for env in self.environments
+            ],
+            "conflicts": [
+                conflict.to_dict()
+                for conflict in self.conflicts
+            ],
             "warnings": self.warnings,
             "packages": [
-                req.raw_line for req in self.merged_requirements.values()
+                req.raw_line
+                for req in self.merged_requirements.values()
             ],
         }

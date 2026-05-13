@@ -6,6 +6,46 @@ The project follows incremental internal releases while maintaining stable publi
 
 ---
 
+## 🚀 v1.0.0
+
+### Reporting System
+
+- Added reusable report generation layer
+- Added console report generator
+- Added JSON report generator
+- Added structured merge report artifacts
+
+### Export Features
+
+- Added JSON report export support
+- Added deterministic lockfile export
+- Added reproducible merge metadata serialization
+
+### CLI Improvements
+
+- Refactored dry-run reporting flow
+- Centralized report rendering logic
+- Added report persistence options
+
+### v1.0 Milestone
+
+This release marks the first stable major version of pyvenvmerge.
+
+Core capabilities now include:
+
+- Environment validation
+- Dependency extraction
+- Semantic version merging
+- Conflict classification
+- Dependency graph analysis
+- Compatibility scoring
+- Risk diagnostics
+- Structured reporting
+- Lockfile export
+- Non-PyPI dependency handling
+
+---
+
 # v0.9.0
 
 ## Added

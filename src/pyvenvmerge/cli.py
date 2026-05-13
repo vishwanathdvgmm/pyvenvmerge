@@ -1,130 +1,140 @@
 import argparse
+import json
 import sys
 
-from pyvenvmerge.orchestrator import merge_environments
 from pyvenvmerge.core.planner import create_merge_plan
-from pyvenvmerge.infra.exceptions import PyvenvmergeError
-from pyvenvmerge.core.reporting import (
-    generate_report,
-    save_json_report,
-    save_lockfile,
+from pyvenvmerge.core.report_generator import (
+    generate_console_report,
+    generate_json_report,
 )
+from pyvenvmerge.infra.exceptions import PyvenvmergeError
+from pyvenvmerge.models.merge_report import MergeReport
+from pyvenvmerge.orchestrator import merge_environments
+
+def save_json_report(
+    report: MergeReport,
+    output_path: str,
+):
+    """
+    Save structured merge report to JSON file.
+    """
+    with open(output_path, "w", encoding="utf-8") as file:
+        json.dump(
+            report.to_dict(),
+            file,
+            indent=2,
+        )
+
+def save_lockfile(
+    plan,
+    output_path: str,
+):
+    """
+    Export deterministic lockfile.
+    """
+    with open(output_path, "w", encoding="utf-8") as file:
+        for req in plan.merged_requirements.values():
+            file.write(req.raw_line + "\n")
 
 def main():
     parser = argparse.ArgumentParser(
         prog="pyvenvmerge",
-        description="Safely merge multiple Python virtual environments."
+        description=(
+            "Safely merge multiple "
+            "Python virtual environments."
+        ),
     )
-
     parser.add_argument(
         "envs",
         nargs="+",
-        help="Paths to virtual environments to merge"
+        help="Paths to virtual environments to merge",
     )
-
     parser.add_argument(
         "-o",
         "--output",
-        help="Output path for merged environment"
+        help="Output path for merged environment",
     )
-
     parser.add_argument(
         "--strategy",
-        choices=["highest", "strict", "unpinned"],
+        choices=[
+            "highest",
+            "strict",
+            "unpinned",
+        ],
         default="highest",
-        help="Conflict resolution strategy"
+        help="Conflict resolution strategy",
     )
-
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Show merge plan without creating environment"
+        help=(
+            "Show merge plan without "
+            "creating environment"
+        ),
     )
-
     parser.add_argument(
         "--report",
-        choices=["console", "json"],
+        choices=[
+            "console",
+            "json",
+        ],
         default="console",
-        help="Output format for dry-run reports"
+        help="Output format for dry-run reports",
     )
-
     parser.add_argument(
         "--save-report",
-        help="Save merge report to JSON file"
+        help="Save merge report to JSON file",
     )
-
     parser.add_argument(
         "--export-lock",
-        help="Export deterministic lockfile"
+        help="Export deterministic lockfile",
     )
 
     args = parser.parse_args()
 
     try:
         if args.dry_run:
-            plan = create_merge_plan(args.envs, args.strategy)
-            report = generate_report(plan)
-
+            plan = create_merge_plan(
+                args.envs,
+                args.strategy,
+            )
+            report = MergeReport.from_merge_plan(
+                plan
+            )
             if args.save_report:
-                save_json_report(report, args.save_report)
-
+                save_json_report(
+                    report,
+                    args.save_report,
+                )
             if args.export_lock:
-                save_lockfile(plan, args.export_lock)
-
+                save_lockfile(
+                    plan,
+                    args.export_lock,
+                )
             if args.report == "json":
-                import json
-                print(json.dumps(plan.to_dict(), indent=2))
+                print(
+                    generate_json_report(plan)
+                )
                 return
-
-            print("\nDry Run Summary")
-            print("----------------")
-            print(f"Python version: {plan.python_version}")
-            print(f"Compatibility Score: {plan.compatibility_score}/100")
-            print(f"Risk Level: {plan.risk_level}")
-
-            if plan.conflicts:
-                print("\nConflicts detected:")
-                print("-----------------")
-                for conflict in plan.conflicts:
-                    print(f"{conflict.package} ({conflict.conflict_type})")
-
-                    for env_name, version in conflict.versions_by_env.items():
-                        print(f"  {env_name} → {version}")
-
-                    print(f"  selected → {conflict.selected_version}")
-                    print(f"  strategy → {conflict.strategy}")
-
-                    if conflict.warnings:
-                        for w in conflict.warnings:
-                            print(f"  ⚠ {w}")
-                    print()
-
-            if plan.warnings:
-                print("\nWarnings:")
-                print("---------")
-                for w in plan.warnings:
-                    print(f"⚠ {w}")
-
-            print("\nPackages to install:")
-            print("----------------")
-
-            for req in plan.merged_requirements.values():
-                print(f"  {req.raw_line}")
-
-            print("\nNo environment created.")
+            print(
+                generate_console_report(plan)
+            )
             return
-        
         if not args.output:
-            raise PyvenvmergeError("Output path required unless using --dry-run")
-
+            raise PyvenvmergeError(
+                "Output path required "
+                "unless using --dry-run"
+            )
         result = merge_environments(
             args.envs,
             args.output,
-            strategy=args.strategy
+            strategy=args.strategy,
         )
-
-        print(f"\nMerge successful. New environment created at: {result}")
-
-    except PyvenvmergeError as e:
-        print(f"\nERROR: {e}")
+        print(
+            "\nMerge successful. "
+            f"New environment created at: "
+            f"{result}"
+        )
+    except PyvenvmergeError as error:
+        print(f"\nERROR: {error}")
         sys.exit(1)

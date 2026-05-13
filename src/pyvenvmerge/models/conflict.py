@@ -1,20 +1,20 @@
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Any
 
 @dataclass
 class Conflict:
     """
-    Represents a dependency version conflict between environments.
+    Represents a dependency conflict
+    discovered during planning.
     """
-
     package: str
-    versions_by_env: Dict[str, str]
+    versions_by_env: dict[str, str]
     selected_version: str
     strategy: str
     conflict_type: str = "VERSION_CONFLICT"
-    warnings: List[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         return {
             "package": self.package,
             "versions": self.versions_by_env,

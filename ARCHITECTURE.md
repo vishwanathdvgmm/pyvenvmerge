@@ -17,6 +17,7 @@ flowchart TD
     PLANNER --> RESOLVER[Conflict Resolver]
     RESOLVER --> SPECMERGE[Specifier Merge Engine]
     PLANNER --> DEPGRAPH[Dependency Graph]
+    PLANNER --> REPORTGENERATOR[Report Generator]
 
     ORCH --> REPORTING[Reporting Layer]
 
@@ -39,6 +40,7 @@ Pyvenvmerge/
 │       │   ├── 🐍 inspector.py
 │       │   ├── 🐍 merger.py
 │       │   ├── 🐍 planner.py
+│       │   ├── 🐍 report_generator.py
 │       │   ├── 🐍 reporting.py
 │       │   ├── 🐍 resolver.py
 │       │   ├── 🐍 specifier_merge.py
@@ -284,6 +286,26 @@ Ensures:
 
 - No broken requirements
 - No unresolved dependency conflicts
+
+---
+
+### 🔟 report_generator.py (v0.9 upgrade)
+
+Responsible for:
+
+- Console report rendering
+- JSON report generation
+- Dry-run presentation formatting
+- Report serialization support
+
+Capabilities:
+
+- Human-readable merge summaries
+- Structured JSON output
+- Shared reporting abstraction
+- Reusable output layer for future integrations
+
+This module separates reporting concerns from the CLI layer.
 
 ---
 
